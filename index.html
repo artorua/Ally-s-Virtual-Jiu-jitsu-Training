@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ally - jiu jitsu Training Virtual</title>
+    <style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: url('BG.png') repeat;
+    animation: moverDiagonal 20s linear infinite;
+
+    display: flex;              /* ativa flexbox */
+    flex-direction: column;     /* empilha GIF e botão verticalmente */
+    justify-content: center;    /* centraliza no eixo vertical */
+    align-items: center;        /* centraliza no eixo horizontal */
+}
+
+
+        .Ally-gif {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            object-position: center;
+        }
+
+        .roll-button {
+            background-color: rgb(161, 41, 41);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            align-items: center;
+        }
+
+        .roll-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
+        }
+
+        .roll-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+
+        .roll-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsivo para mobile */
+        @media (max-width: 480px) {
+            .Ally-container {
+                width: 250px;
+                height: 250px;
+                margin: 15px;
+            }
+            
+            .roll-button {
+                padding: 12px 25px;
+                font-size: 18px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="Ally-container">
+        <img class="Ally-gif" id="allyGif" src="Ally_Parada.gif" alt="Ally">
+    </div>
+    
+    <button class="roll-button" id="rollButton" onclick="makeAllyRoll()">
+        Aperte para Rolar
+    </button>
+
+    <script>
+        class Ally {
+            constructor() {
+                this.gif = document.getElementById('allyGif');
+                this.button = document.getElementById('rollButton');
+                this.audio = null;
+                this.isRolling = false;
+                
+                // Precarrega o áudio
+                this.loadAudio();
+                
+                // Garante que o GIF idle esteja carregado
+                this.gif.src = 'Ally_Parada.gif';
+            }
+
+            loadAudio() {
+                try {
+                    this.audio = new Audio('ROLANDO.wav');
+                    this.audio.preload = 'auto';
+                    
+                    // Configura o áudio para tocar uma vez
+                    this.audio.loop = false;
+                    this.audio.volume = 0.7;
+                } catch (e) {
+                    console.log('Áudio não pôde ser carregado:', e);
+                }
+            }
+
+            async roll() {
+                if (this.isRolling) return;
+                
+                this.isRolling = true;
+                this.button.disabled = true;
+                this.button.textContent = 'Rolando...';
+                
+                // Troca para o GIF de rolando
+                this.gif.src = 'Ally_Rolando.gif?' + Date.now(); // Cache bust para reiniciar o GIF
+                
+                // Toca o som
+                if (this.audio) {
+                    try {
+                        this.audio.currentTime = 0; // Reinicia o áudio do início
+                        await this.audio.play();
+                    } catch (e) {
+                        console.log('Não foi possível tocar o áudio:', e);
+                    }
+                }
+                
+                // Volta para o idle depois de 1 segundos
+                setTimeout(() => {
+                    this.gif.src = 'Ally_Parada.gif?' + Date.now();
+                    this.isRolling = false;
+                    this.button.disabled = false;
+                    this.button.textContent = 'Aperte para Rolar';
+                }, 1150);
+            }
+        }
+
+        let ally;
+
+        function makeAllyRoll() {
+            ally.roll();
+        }
+
+        // Inicializa quando a página carrega
+        window.addEventListener('load', () => {
+            ally = new Ally();
+        });
+
+        // Suporte para touch em dispositivos móveis
+        document.addEventListener('touchstart', function(e) {
+            // Permite interação normal
+        });
+
+        // Previne zoom indesejado no mobile
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale && e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
